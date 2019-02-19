@@ -1,9 +1,9 @@
-const w = 300;
+const w = 400;
 const h = 100;
 const padding = 2;
 
 const circleRadii = [40, 20, 10];
-const barchartDataset = [15, 10, 15, 20, 25, 30, 50];
+const barchartDataset = [15, 10, 15, 20, 25, 30, 40];
 const monthlySales = [
   { month: 10, sales: 100 },
   { month: 20, sales: 130 },
@@ -62,25 +62,50 @@ svg
   .attr('height', d => d * 2)
   .style('fill', d => `rgb(${d * 10}, 0, 0)`);
 
+svg
+  .selectAll('text')
+  .data(barchartDataset)
+  .enter()
+  .append('text')
+  .text(d => d)
+  .attr('x', (d, i) => i * (w / barchartDataset.length) + 20)
+  .attr('y', d => h - d - 25)
+  .style('font-family', 'sans-serif');
+
 // line chart
 
-const lineFun = d3.svg
-  .line()
-  .x(d => d.month)
-  .y(d => h - d.sales)
-  .interpolate('linear');
+const lineH = 400;
+const lineW = 500;
 
-const lineSVG = d3
+const lineFunc = d3
+  .line()
+  .x(d => d.month * 2)
+  .y(d => lineH - d.sales)
+  .curve(d3.curveLinear);
+
+const svgContainer = d3
   .select('body')
   .append('svg')
-  .attr({
-    width: w,
-    height: h,
-  });
+  .attr('width', lineW)
+  .attr('height', lineH);
 
-const viz = lineSVG.append('path').attr({
-  d: lineFun(monthlySales),
-  stroke: 'purple',
-  'stroke-width': 2,
-  fill: 'none',
-});
+const viz = svgContainer
+  .append('path')
+  .attr('d', lineFunc(monthlySales))
+  .attr('stroke', 'purple')
+  .attr('stroke-width', 2)
+  .attr('fill', 'none');
+
+const labels = svgContainer
+  .selectAll('text')
+  .data(monthlySales)
+  .enter()
+  .append('text')
+  .text(d => d.sales)
+  .attr('x', d => d.month * 2)
+  .attr('y', d => lineH - d.sales)
+  .attr('font-size', '12px')
+  .attr('font-family', 'sans-serif')
+  .attr('text-anchor', 'start')
+  .attr('dy', '.35em')
+  .attr('dx', '.35em');
