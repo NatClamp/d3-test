@@ -117,7 +117,7 @@ var margin = { top: 30, right: 30, bottom: 70, left: 60 },
   height = 400 - margin.top - margin.bottom;
 
 var svg = d3
-  .select('#my_dataviz')
+  .select('#lessSimple_barplot')
   .append('svg')
   .attr('width', width + margin.left + margin.right)
   .attr('height', height + margin.top + margin.bottom)
@@ -160,4 +160,72 @@ d3.csv(
     .attr('width', x.bandwidth())
     .attr('height', d => height - y(d.Value))
     .attr('fill', '#ccc');
+});
+
+// lollipop - ordered
+
+const margin1 = {
+  top: 10,
+  right: 30,
+  bottom: 40,
+  left: 100,
+};
+width1 = 460 - margin1.left - margin1.right;
+height1 = 450 - margin1.top - margin1.bottom;
+
+const lollipopSVG = d3
+  .select('#lessSimple_lollipop')
+  .append('svg')
+  .attr('width', width1 + margin1.left + margin1.right)
+  .attr('height', height1 + margin1.top + margin1.bottom)
+  .append('g')
+  .attr('transform', `translate(${margin1.left}, ${margin1.top})`);
+
+d3.csv(
+  'https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv',
+).then(data => {
+  data.sort((b, a) => a.Value - b.Value);
+
+  const x1 = d3
+    .scaleLinear()
+    .domain([0, 13000])
+    .range([0, width1]);
+  lollipopSVG
+    .append('g')
+    .attr('transform', `translate(0, ${height1})`)
+    .call(d3.axisBottom(x1))
+    .selectAll('text')
+    .attr('transform', `translate(-10,0)rotate(-45)`)
+    .style('text-anchor', 'end');
+
+  const y1 = d3
+    .scaleBand()
+    .range([0, height1])
+    .domain(data.map(d => d.Country))
+    .padding(1);
+  lollipopSVG.append('g').call(d3.axisLeft(y1));
+
+  // Lines
+  lollipopSVG
+    .selectAll('myline')
+    .data(data)
+    .enter()
+    .append('line')
+    .attr('x1', d => x1(d.Value))
+    .attr('x2', x1(0))
+    .attr('y1', d => y1(d.Country))
+    .attr('y2', d => y1(d.Country))
+    .attr('stroke', 'grey');
+
+  // Circles
+  lollipopSVG
+    .selectAll('mycircle')
+    .data(data)
+    .enter()
+    .append('circle')
+    .attr('cx', d => x1(d.Value))
+    .attr('cy', d => y1(d.Country))
+    .attr('r', '7')
+    .style('fill', '#69b3a2')
+    .attr('stroke', 'black');
 });
